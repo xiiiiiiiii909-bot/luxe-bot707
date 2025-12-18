@@ -1,6 +1,27 @@
 import discord
 from discord.ext import commands
 from discord.ui import Button, View
+import requests
+from flask import Flask
+from threading import Thread
+import asyncio
+import os # ضروري لجلب البورت من ريندر
+
+# --- نظام الـ Keep Alive المطور لـ Luxe Store ---
+app = Flask('')
+
+@app.route('/')
+def home(): 
+    return "Luxe Store Bot is Active and Running 24/7!"
+
+def run():
+    # جلب البورت تلقائياً من Render لضمان عدم حدوث خطأ 502
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 
 # --- إعدادات Luxe Store ---
 TOKEN = "MTQ1MTI3MDc2NzQxNjQ0MzEyMw.GRvkxX.oE673CwKOHAt5d2TI2NaAfBl4ABKA098yChxoQ" 
@@ -11,7 +32,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# --- قاعدة بيانات المنتجات مع كافة الصور (مدمجة) ---
+# --- قاعدة بيانات المنتجات ---
 PRODUCTS = {
     "product_1": {
         "name": "🔥 𝐋𝐮𝐱𝐞 𝐒𝐭𝐨𝐫𝐞 / Bot ادارة الدسكورد", 
@@ -86,7 +107,6 @@ class PersonalCarousel(View):
         self.quantity = 1
         self.data = PRODUCTS[product_id]
         
-        # أزرار الكمية تظهر فقط للمنتج السادس (طلب بوت خاص)
         if product_id != "product_6":
             self.remove_item(self.minus_btn)
             self.remove_item(self.plus_btn)
@@ -154,7 +174,9 @@ async def setup_store(ctx):
 
 @bot.event
 async def on_ready():
-    print(f"✅ Luxe Store System - Full Images and 6 Products Integrated.")
+    print(f"✅ Luxe Store System is Online.")
+    print(f"🔗 Keep Alive URL: https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'your-app-name.onrender.com')}")
 
-bot.run(TOKEN)
-
+if __name__ == "__main__":
+    keep_alive() # تشغيل النبض المطور
+    bot.run(TOKEN)
