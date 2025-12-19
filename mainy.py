@@ -5,9 +5,9 @@ import requests
 from flask import Flask
 from threading import Thread
 import asyncio
-import os # ضروري لجلب البورت من ريندر
+import os
 
-# --- نظام الـ Keep Alive المطور لـ Luxe Store ---
+# --- نظام الـ Keep Alive لـ Luxe Store ---
 app = Flask('')
 
 @app.route('/')
@@ -15,7 +15,7 @@ def home():
     return "Luxe Store Bot is Active and Running 24/7!"
 
 def run():
-    # جلب البورت تلقائياً من Render لضمان عدم حدوث خطأ 502
+    # جلب البورت من ريندر لضمان استقرار الخدمة
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
 
@@ -24,8 +24,9 @@ def keep_alive():
     t.start()
 
 # --- إعدادات Luxe Store ---
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------TOKEN = "MTQ1MTI3MDc2NzQxNjQ0MzEyMw.GW8yIz.qIkxllONGnhHx32BEv5W9eEm8cwauFJvW7yQzM" 
-SHOP_CHANNEL_ID = 1445513442826911764    
+# تم تعديل هذا السطر لجلب التوكن من إعدادات البيئة (Environment Variables)
+TOKEN = os.environ.get("DISCORD_TOKEN") 
+SHOP_CHANNEL_ID = 1445513442826911764  
 ORDERS_CHANNEL_ID = 1451158466407174229  
 
 intents = discord.Intents.default()
@@ -175,10 +176,10 @@ async def setup_store(ctx):
 @bot.event
 async def on_ready():
     print(f"✅ Luxe Store System is Online.")
-    print(f"🔗 Keep Alive URL: https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'your-app-name.onrender.com')}")
 
 if __name__ == "__main__":
-    keep_alive() # تشغيل النبض المطور
-    bot.run(TOKEN)
-
-
+    keep_alive()
+    if TOKEN:
+        bot.run(TOKEN)
+    else:
+        print("❌ Error: DISCORD_TOKEN is not set in Environment Variables!")
